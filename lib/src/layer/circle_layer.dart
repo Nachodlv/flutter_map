@@ -7,6 +7,7 @@ import 'package:latlong/latlong.dart' hide Path; // conflict with Path from UI
 
 class CircleLayerOptions extends LayerOptions {
   final List<CircleMarker> circles;
+
   CircleLayerOptions({this.circles = const [], rebuild})
       : super(rebuild: rebuild);
 }
@@ -18,22 +19,25 @@ class CircleMarker {
   final double borderStrokeWidth;
   final Color borderColor;
   final bool useRadiusInMeter;
+  final Function onTap;
   Offset offset = Offset.zero;
   num realRadius = 0;
-  CircleMarker({
-    this.point,
-    this.radius,
-    this.useRadiusInMeter = false,
-    this.color = const Color(0xFF00FF00),
-    this.borderStrokeWidth = 0.0,
-    this.borderColor = const Color(0xFFFFFF00),
-  });
+
+  CircleMarker(
+      {this.point,
+      this.radius,
+      this.useRadiusInMeter = false,
+      this.color = const Color(0xFF00FF00),
+      this.borderStrokeWidth = 0.0,
+      this.borderColor = const Color(0xFFFFFF00),
+      this.onTap});
 }
 
 class CircleLayer extends StatelessWidget {
   final CircleLayerOptions circleOpts;
   final MapState map;
   final Stream<Null> stream;
+
   CircleLayer(this.circleOpts, this.map, this.stream);
 
   @override
@@ -67,10 +71,18 @@ class CircleLayer extends StatelessWidget {
           }
 
           circleWidgets.add(
-            CustomPaint(
-              painter: CirclePainter(circle),
-              size: size,
-            ),
+            circle.onTap == null
+                ? CustomPaint(
+                    painter: CirclePainter(circle),
+                    size: size,
+                  )
+                : GestureDetector(
+                    onTap: circle.onTap,
+                    child: CustomPaint(
+                      painter: CirclePainter(circle),
+                      size: size,
+                    ),
+                  ),
           );
         }
 
@@ -86,6 +98,7 @@ class CircleLayer extends StatelessWidget {
 
 class CirclePainter extends CustomPainter {
   final CircleMarker circle;
+
   CirclePainter(this.circle);
 
   @override
